@@ -1,4 +1,6 @@
-Jonathan Zieger 592072
-Duncan Wittner 592190
-Anna Gröpler ######
+Jonathan 592072
+Duncan 592190
+Anna 587038
+Lorenz 591904
+Homam 592027
 # Distributed-Systems
