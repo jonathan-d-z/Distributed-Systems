@@ -1,6 +1,8 @@
 package com.example.testservice.entities;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.*;
 
@@ -12,20 +14,13 @@ import lombok.*;
 @Builder
 public class Food {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    //General Info
+    @NonNull
     private String code;
+    @NonNull
     private String product_name;
+    @NonNull
     private String generic_name;
     private float quantity;
-    private String brands,brands_tag;
-    private String categories,categories_tag;
-    private String countries,countries_tag;
-    private String languages,languages_tag;
-    private String url;
-    //Nutriments
-    //private Nutriments nutriments;
-    //...https://de.openfoodfacts.org/produkt/4008400401621/nutella
-
-
 }
