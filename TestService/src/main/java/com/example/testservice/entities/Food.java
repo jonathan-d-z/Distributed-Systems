@@ -1,8 +1,6 @@
 package com.example.testservice.entities;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.*;
 
@@ -18,5 +16,11 @@ public class Food {
     private String code;
     private String product_name;
     private String generic_name;
-    private float quantity;
+    private Float energyKcal;
+    private Float proteins;
+    private Float carbohydrates;
+    private Float fat;
+    private Float sugars;
+    private Float fiber;
+    private Float salt;
 }
