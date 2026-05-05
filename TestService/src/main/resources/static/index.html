@@ -325,15 +325,21 @@
         body: JSON.stringify({ name })
       });
 
+      const body = await res.json().catch(() => ({}));
+
       if (res.status === 404) {
-        showError(`No product found for "${name}". Try a different name.`);
+        showError(body.message || `No product found for "${name}". Try a different name.`);
+        return;
+      }
+
+      if (res.status === 503) {
+        showError('⚠ OpenFoodFacts is temporarily unavailable due to high demand. Please wait a moment and try again.');
         return;
       }
 
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
-      const food = await res.json();
-      showResult(food);
+      showResult(body);
       loadFoods();
       input.value = '';
     } catch (e) {

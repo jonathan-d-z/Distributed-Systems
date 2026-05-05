@@ -2,9 +2,11 @@ package com.example.testservice.client;
 
 import com.example.testservice.dtos.OpenFoodFactsResponse;
 import com.example.testservice.dtos.ProductDto;
+import com.example.testservice.exceptions.OpenFoodFactsUnavailableException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.util.Optional;
 
@@ -21,17 +23,21 @@ public class OpenFoodFactsClient {
     }
 
     public Optional<ProductDto> searchByName(String name) {
-        OpenFoodFactsResponse response = restClient.get()
-                .uri("/cgi/search.pl?search_terms={name}&json=1&page_size=1&fields=code,product_name,generic_name,nutriments", name)
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, (req, res) -> {
-                    // swallow 4xx/5xx from OpenFoodFacts (e.g. 503 rate limit) — treat as no result
-                })
-                .body(OpenFoodFactsResponse.class);
+        try {
+            OpenFoodFactsResponse response = restClient.get()
+                    .uri("/cgi/search.pl?search_terms={name}&json=1&page_size=1&fields=code,product_name,generic_name,nutriments", name)
+                    .retrieve()
+                    .onStatus(HttpStatusCode::isError, (req, res) -> {
+                        throw new OpenFoodFactsUnavailableException();
+                    })
+                    .body(OpenFoodFactsResponse.class);
 
-        if (response == null || response.getProducts() == null || response.getProducts().isEmpty()) {
-            return Optional.empty();
+            if (response == null || response.getProducts() == null || response.getProducts().isEmpty()) {
+                return Optional.empty();
+            }
+            return Optional.of(response.getProducts().getFirst());
+        } catch (RestClientException e) {
+            throw new OpenFoodFactsUnavailableException();
         }
-        return Optional.of(response.getProducts().getFirst());
     }
 }
