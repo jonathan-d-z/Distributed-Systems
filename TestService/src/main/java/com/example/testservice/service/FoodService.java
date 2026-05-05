@@ -33,6 +33,12 @@ public class FoodService {
         }
 
         ProductDto product = productOpt.get();
+
+        // skip products without a barcode (can't use as primary key)
+        if (product.getCode() == null || product.getCode().isBlank()) {
+            return Optional.empty();
+        }
+
         NutrimentsDto n = product.getNutriments();
 
         Food food = Food.builder()
