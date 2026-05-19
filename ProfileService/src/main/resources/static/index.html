@@ -319,6 +319,12 @@
   modeBtn.addEventListener('click', () => setMode(!createMode));
 
   setMode(false);
+
+  if (new URLSearchParams(window.location.search).get('logout') === '1') {
+    sessionStorage.removeItem(TOKEN_KEY);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    setMessage('success', 'You have been logged out.');
+  }
 </script>
 </body>
 </html>
