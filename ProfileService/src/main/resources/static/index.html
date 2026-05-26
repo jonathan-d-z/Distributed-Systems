@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProfileService</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #22c55e;
+      --green-dark: #16a34a;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --red: #ef4444;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    main {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 1.25rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 1rem;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--green);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.35;
+    }
+
+    button {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem 1.4rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:hover { background: var(--green-dark); }
+    button:disabled { background: var(--border); cursor: not-allowed; }
+
+    .secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .secondary:hover {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .switch-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .message {
+      display: none;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .message.error {
+      display: block;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid var(--red);
+      color: var(--red);
+    }
+
+    .message.success {
+      display: block;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid var(--green);
+      color: var(--green);
+    }
+  </style>
+</head>
+<body>
+<header>
+  <span class="logo">ProfileService</span>
+  <span class="tagline">Login for FoodNutri</span>
+</header>
+
+<main>
+  <section class="card">
+    <h1 id="formTitle">Login</h1>
+    <p id="formIntro">Use your profile account to open FoodNutri.</p>
+
+    <form id="accountForm">
+      <label>
+        Username
+        <input type="text" id="usernameInput" autocomplete="username" value="duncan" />
+        <span class="hint" id="usernameHint" style="display:none;">Minimum 3 characters.</span>
+      </label>
+      <label>
+        Password
+        <input type="password" id="passwordInput" autocomplete="current-password" value="fortnite" />
+        <span class="hint" id="passwordHint" style="display:none;">Minimum 6 characters.</span>
+      </label>
+      <button id="submitBtn" type="submit">Login</button>
+    </form>
+
+    <div class="switch-row">
+      <button class="secondary" id="modeBtn" type="button">Create Account</button>
+    </div>
+
+    <div id="message" class="message"></div>
+  </section>
+</main>
+
+<script>
+  const FOODNUTRI_URL = 'http://localhost:8080';
+  const TOKEN_KEY = 'foodnutriProfileToken';
+
+  let createMode = false;
+
+  const form = document.getElementById('accountForm');
+  const formTitle = document.getElementById('formTitle');
+  const formIntro = document.getElementById('formIntro');
+  const usernameInput = document.getElementById('usernameInput');
+  const passwordInput = document.getElementById('passwordInput');
+  const usernameHint = document.getElementById('usernameHint');
+  const passwordHint = document.getElementById('passwordHint');
+  const submitBtn = document.getElementById('submitBtn');
+  const modeBtn = document.getElementById('modeBtn');
+  const message = document.getElementById('message');
+
+  function setMessage(type, text) {
+    message.className = `message ${type}`;
+    message.textContent = text;
+  }
+
+  function clearMessage() {
+    message.className = 'message';
+    message.textContent = '';
+  }
+
+  function setMode(nextCreateMode) {
+    createMode = nextCreateMode;
+    clearMessage();
+
+    formTitle.textContent = createMode ? 'Create Account' : 'Login';
+    formIntro.textContent = createMode
+      ? 'Create a new profile account and use it to open FoodNutri.'
+      : 'Use your profile account to open FoodNutri.';
+    submitBtn.textContent = createMode ? 'Create Account' : 'Login';
+    modeBtn.textContent = createMode ? 'Back to Login' : 'Create Account';
+    usernameHint.style.display = createMode ? 'inline' : 'none';
+    passwordHint.style.display = createMode ? 'inline' : 'none';
+    passwordInput.value = createMode ? '' : 'fortnite';
+    usernameInput.value = createMode ? '' : 'duncan';
+  }
+
+  function validateInput(username, password) {
+    if (!username) {
+      setMessage('error', 'Username is required.');
+      return false;
+    }
+    if (!password) {
+      setMessage('error', 'Password is required.');
+      return false;
+    }
+    if (createMode && username.length < 3) {
+      setMessage('error', 'Username must contain at least 3 characters.');
+      return false;
+    }
+    if (createMode && password.length < 6) {
+      setMessage('error', 'Password must contain at least 6 characters.');
+      return false;
+    }
+    return true;
+  }
+
+  function openFoodNutri() {
+    window.location.href = FOODNUTRI_URL;
+  }
+
+  async function submitJson(url, payload) {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const body = await response.json().catch(() => ({}));
+    return { response, body };
+  }
+
+  async function login(username, password) {
+    const { response, body } = await submitJson('/profiles/login', { username, password });
+
+    if (!response.ok) {
+      setMessage('error', body.message || 'Login failed.');
+      return false;
+    }
+
+    sessionStorage.setItem(TOKEN_KEY, body.token);
+    openFoodNutri();
+    return true;
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    clearMessage();
+
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!validateInput(username, password)) {
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = createMode ? 'Creating...' : 'Logging in...';
+
+    try {
+      if (createMode) {
+        const { response, body } = await submitJson('/profiles/register', { username, password });
+
+        if (!response.ok) {
+          setMessage('error', body.message || 'Account could not be created.');
+          return;
+        }
+
+        await login(username, password);
+        return;
+      }
+
+      await login(username, password);
+    } catch {
+      setMessage('error', 'Could not reach the server.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = createMode ? 'Create Account' : 'Login';
+    }
+  });
+
+  modeBtn.addEventListener('click', () => setMode(!createMode));
+
+  setMode(false);
+
+  if (new URLSearchParams(window.location.search).get('logout') === '1') {
+    sessionStorage.removeItem(TOKEN_KEY);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    setMessage('success', 'You have been logged out.');
+  }
+</script>
+</body>
+</html>

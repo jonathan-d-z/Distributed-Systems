@@ -31,6 +31,13 @@
       padding: 1rem 2rem;
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
       gap: 0.75rem;
     }
 
@@ -216,6 +223,7 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    .logout-btn,
     .refresh-btn {
       background: transparent;
       border: 1px solid var(--border);
@@ -225,6 +233,7 @@
       font-weight: 500;
     }
 
+    .logout-btn:hover,
     .refresh-btn:hover { background: var(--surface2); color: var(--text); }
 
     .card-header {
@@ -240,8 +249,11 @@
 <body>
 
 <header>
-  <span class="logo">🥦 FoodNutri</span>
-  <span class="tagline">Track what you eat</span>
+  <div class="brand">
+    <span class="logo">FoodNutri</span>
+    <span class="tagline">Track what you eat</span>
+  </div>
+  <button class="logout-btn" onclick="logout()">Logout</button>
 </header>
 
 <main>
@@ -250,7 +262,7 @@
   <div class="card">
     <h2>Log a food</h2>
     <div class="search-row">
-      <input type="text" id="searchInput" placeholder="e.g. Nutella, Avocado, Oatmeal…" />
+      <input type="text" id="searchInput" placeholder="e.g. Nutella, Avocado, Oatmeal..." />
       <button id="searchBtn" onclick="searchFood()">Search &amp; Save</button>
     </div>
     <div class="error-msg" id="errorMsg"></div>
@@ -263,7 +275,7 @@
         <div class="product-name" id="productName"></div>
         <div class="product-code" id="productCode"></div>
       </div>
-      <span class="badge">Saved ✓</span>
+      <span class="badge">Saved</span>
     </div>
     <div class="nutrients" id="nutrientsGrid"></div>
   </div>
@@ -272,7 +284,7 @@
   <div class="card">
     <div class="card-header">
       <h2>Food log</h2>
-      <button class="refresh-btn" onclick="loadFoods()">↻ Refresh</button>
+      <button class="refresh-btn" onclick="loadFoods()">Refresh</button>
     </div>
     <div class="table-wrap">
       <table>
@@ -299,9 +311,15 @@
 
 <script>
   const API = '';
+  const PROFILE_SERVICE_URL = 'http://localhost:8082';
 
   function fmt(val) {
-    return val != null ? val.toFixed(1) : '—';
+    return val != null ? val.toFixed(1) : '-';
+  }
+
+  function logout() {
+    sessionStorage.clear();
+    window.location.href = `${PROFILE_SERVICE_URL}/?logout=1`;
   }
 
   async function searchFood() {
@@ -316,7 +334,7 @@
     errorMsg.style.display = 'none';
     resultCard.style.display = 'none';
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>Searching…';
+    btn.innerHTML = '<span class="spinner"></span>Searching...';
 
     try {
       const res = await fetch(`${API}/foods/search`, {
@@ -333,7 +351,7 @@
       }
 
       if (res.status === 503) {
-        showError('⚠ OpenFoodFacts is temporarily unavailable due to high demand. Please wait a moment and try again.');
+        showError('OpenFoodFacts is temporarily unavailable due to high demand. Please wait a moment and try again.');
         return;
       }
 
