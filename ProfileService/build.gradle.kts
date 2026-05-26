@@ -18,7 +18,15 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:2025.1.1")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:4.0.6")
+    }
+}
+
 dependencies {
+    implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web:4.0.6")
     implementation("org.springframework.boot:spring-boot-h2console:4.0.0-M1")

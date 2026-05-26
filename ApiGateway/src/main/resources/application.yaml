@@ -1,0 +1,44 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: ApiGateway
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origins: "http://localhost:8080,http://localhost:8081,http://localhost:8082"
+                allowed-methods: "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+                allowed-headers: "*"
+          routes:
+            - id: test-service
+              uri: lb://TEST-SERVICE
+              predicates:
+                - Path=/api/foods/**
+              filters:
+                - StripPrefix=1
+
+            - id: challenge-service
+              uri: lb://CHALLENGESERVICE
+              predicates:
+                - Path=/api/challenges/**
+              filters:
+                - StripPrefix=1
+
+            - id: profile-service
+              uri: lb://PROFILESERVICE
+              predicates:
+                - Path=/api/profiles/**
+              filters:
+                - StripPrefix=1
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true

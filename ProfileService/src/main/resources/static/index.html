@@ -192,6 +192,7 @@
 
 <script>
   const FOODNUTRI_URL = 'http://localhost:8080';
+  const API = 'http://localhost:8085/api';
   const TOKEN_KEY = 'foodnutriProfileToken';
 
   let createMode = false;
@@ -268,7 +269,7 @@
   }
 
   async function login(username, password) {
-    const { response, body } = await submitJson('/profiles/login', { username, password });
+    const { response, body } = await submitJson(`${API}/profiles/login`, { username, password });
 
     if (!response.ok) {
       setMessage('error', body.message || 'Login failed.');
@@ -296,7 +297,7 @@
 
     try {
       if (createMode) {
-        const { response, body } = await submitJson('/profiles/register', { username, password });
+        const { response, body } = await submitJson(`${API}/profiles/register`, { username, password });
 
         if (!response.ok) {
           setMessage('error', body.message || 'Account could not be created.');
