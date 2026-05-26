@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FoodNutri – Challenges</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #22c55e;
+      --green-dark: #16a34a;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #273549;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+      --orange: #f97316;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 0.75rem; }
+    .logo { font-size: 1.4rem; font-weight: 700; color: var(--green); }
+    .tagline { color: var(--muted); font-size: 0.9rem; }
+
+    .nav-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .nav-link:hover { color: var(--text); border-color: var(--text); }
+
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-header h2 { font-size: 1.05rem; font-weight: 600; }
+
+    button {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem 1.4rem;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    button:hover { background: var(--green-dark); }
+    button:disabled { background: var(--border); cursor: not-allowed; }
+
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Challenge cards */
+    .challenges-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .challenge-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      transition: opacity 0.2s;
+    }
+
+    .challenge-item.done {
+      opacity: 0.45;
+    }
+
+    .challenge-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+
+    .challenge-body { flex: 1; }
+
+    .challenge-title {
+      font-weight: 600;
+      font-size: 0.97rem;
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .challenge-title.done-text {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .type-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .challenge-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .complete-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 0.35rem 0.8rem;
+      border-radius: 6px;
+      flex-shrink: 0;
+      align-self: center;
+    }
+    .complete-btn:hover { background: var(--green); border-color: var(--green); color: #fff; }
+
+    .done-check {
+      color: var(--green);
+      font-size: 1.1rem;
+      align-self: center;
+      flex-shrink: 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      padding: 2.5rem;
+      font-size: 0.9rem;
+    }
+
+    .empty-state .hint {
+      margin-top: 0.5rem;
+      font-size: 0.82rem;
+      opacity: 0.7;
+    }
+
+    .error-msg {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid var(--red);
+      color: var(--red);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.88rem;
+      display: none;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-box {
+      flex: 1;
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      text-align: center;
+    }
+    .stat-box .num { font-size: 1.5rem; font-weight: 700; color: var(--green); }
+    .stat-box .lbl { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <span class="logo">🏆 Challenges</span>
+    <span class="tagline">Daily health goals</span>
+  </div>
+  <a href="http://localhost:8080" class="nav-link">🥦 Food Log →</a>
+</header>
+
+<main>
+
+  <!-- Stats + Generate -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Today's Challenges</h2>
+      <button id="generateBtn" onclick="generateChallenges()">⚡ Generate</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="num" id="statTotal">–</div>
+        <div class="lbl">Total</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" id="statDone">–</div>
+        <div class="lbl">Completed</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" id="statOpen">–</div>
+        <div class="lbl">Open</div>
+      </div>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="challenges-grid" id="challengesGrid">
+      <div class="empty-state">
+        No challenges yet.
+        <div class="hint">Click "Generate" to create challenges based on your food log.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const API = 'http://localhost:8081';
+
+  const TYPE_META = {
+    WATER:    { icon: '💧', color: '#3b82f6' },
+    CALORIES: { icon: '🔥', color: '#f97316' },
+    PROTEIN:  { icon: '💪', color: '#a855f7' },
+    FIBER:    { icon: '🥦', color: '#22c55e' },
+    SUGAR:    { icon: '🍬', color: '#f59e0b' },
+    FAT:      { icon: '🥑', color: '#ef4444' },
+  };
+
+  function getMeta(type) {
+    return TYPE_META[type] || { icon: '⭐', color: '#94a3b8' };
+  }
+
+  async function loadChallenges() {
+    try {
+      const res = await fetch(`${API}/challenges`);
+      const challenges = await res.json();
+      renderChallenges(challenges);
+    } catch {
+      // service not running yet
+    }
+  }
+
+  function renderChallenges(challenges) {
+    const grid = document.getElementById('challengesGrid');
+    const total = challenges.length;
+    const done  = challenges.filter(c => c.completed).length;
+    const open  = total - done;
+
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statDone').textContent  = done;
+    document.getElementById('statOpen').textContent  = open;
+
+    if (total === 0) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          No challenges yet.
+          <div class="hint">Click "Generate" to create challenges based on your food log.</div>
+        </div>`;
+      return;
+    }
+
+    // Sort: open first, then completed
+    const sorted = [...challenges].sort((a, b) => Number(a.completed) - Number(b.completed));
+
+    grid.innerHTML = sorted.map(c => {
+      const meta = getMeta(c.type);
+      return `
+        <div class="challenge-item ${c.completed ? 'done' : ''}" id="challenge-${c.id}">
+          <div class="challenge-icon">${meta.icon}</div>
+          <div class="challenge-body">
+            <div class="challenge-title ${c.completed ? 'done-text' : ''}">
+              ${c.title}
+              <span class="type-badge" style="background:${meta.color}22;color:${meta.color}">${c.type}</span>
+            </div>
+            <div class="challenge-desc">${c.description}</div>
+          </div>
+          ${c.completed
+            ? `<span class="done-check">✓</span>`
+            : `<button class="complete-btn" onclick="completeChallenge(${c.id})">Mark done</button>`
+          }
+        </div>`;
+    }).join('');
+  }
+
+  async function generateChallenges() {
+    const btn = document.getElementById('generateBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    errorMsg.style.display = 'none';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Generating…';
+
+    try {
+      const res = await fetch(`${API}/challenges/generate`, { method: 'POST' });
+      const body = await res.json();
+
+      if (!res.ok) {
+        errorMsg.textContent = body.message || 'Failed to generate challenges.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      renderChallenges(body);
+    } catch {
+      errorMsg.textContent = 'Could not reach Challenge Service on port 8081.';
+      errorMsg.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '⚡ Generate';
+    }
+  }
+
+  async function completeChallenge(id) {
+    try {
+      const res = await fetch(`${API}/challenges/${id}/complete`, { method: 'PATCH' });
+      if (res.ok) loadChallenges();
+    } catch {
+      console.error('Could not complete challenge', id);
+    }
+  }
+
+  loadChallenges();
+</script>
+
+</body>
+</html>
