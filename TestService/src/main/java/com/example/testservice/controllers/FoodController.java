@@ -1,5 +1,6 @@
 package com.example.testservice.controllers;
 
+import com.example.testservice.client.ProfileAuthClient;
 import com.example.testservice.dtos.FoodRequestDto;
 import com.example.testservice.dtos.FoodResponseDto;
 import com.example.testservice.dtos.SearchRequestDto;
@@ -15,55 +16,74 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequiredArgsConstructor
 public class FoodController {
     final FoodService foodService;
+    final ProfileAuthClient profileAuthClient;
 
     @GetMapping("/foods")
-    public List<Food> getFoods(){
-        return this.foodService.getAllFoods();
+    public ResponseEntity<?> getFoods(@RequestHeader(value = "Authorization", required = false) String authorizationHeader){
+        if (!profileAuthClient.isAuthorized(authorizationHeader)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Unauthorized."));
+        }
+        return ResponseEntity.ok(this.foodService.getAllFoods());
     }
 
     @PostMapping("/foods")
-    public FoodResponseDto saveFood(@RequestBody FoodRequestDto foodRequestDto){
+    public ResponseEntity<?> saveFood(
+            @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
+            @RequestBody FoodRequestDto foodRequestDto){
+        if (!profileAuthClient.isAuthorized(authorizationHeader)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Unauthorized."));
+        }
         Food food = Food.builder()
                 .code(foodRequestDto.getCode())
                 .product_name(foodRequestDto.getProduct_name())
                 .generic_name(foodRequestDto.getGeneric_name())
+                .quantityGrams(foodRequestDto.getQuantityGrams())
                 .build();
         foodService.saveFood(food);
-        return FoodResponseDto.builder().code(food.getCode()).product_name(food.getProduct_name()).build();
+        return ResponseEntity.ok(toDto(food));
     }
 
     @PostMapping("/foods/search")
-    public ResponseEntity<?> searchAndSaveFood(@RequestBody SearchRequestDto searchRequest) {
+    public ResponseEntity<?> searchAndSaveFood(
+            @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
+            @RequestBody SearchRequestDto searchRequest) {
+        if (!profileAuthClient.isAuthorized(authorizationHeader)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Unauthorized."));
+        }
         try {
-            Optional<Food> foodOpt = foodService.searchAndSave(searchRequest.getName());
+            Optional<Food> foodOpt = foodService.searchAndSave(searchRequest.getName(), searchRequest.getQuantityGrams());
 
             if (foodOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("message", "No product found for \"" + searchRequest.getName() + "\". Try a different name."));
             }
 
-            Food food = foodOpt.get();
-            return ResponseEntity.ok(FoodResponseDto.builder()
-                    .code(food.getCode())
-                    .product_name(food.getProduct_name())
-                    .generic_name(food.getGeneric_name())
-                    .energyKcal(food.getEnergyKcal())
-                    .proteins(food.getProteins())
-                    .carbohydrates(food.getCarbohydrates())
-                    .fat(food.getFat())
-                    .sugars(food.getSugars())
-                    .fiber(food.getFiber())
-                    .salt(food.getSalt())
-                    .build());
+            return ResponseEntity.ok(toDto(foodOpt.get()));
 
         } catch (OpenFoodFactsUnavailableException e) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                     .body(Map.of("message", e.getMessage()));
         }
+    }
+
+    private FoodResponseDto toDto(Food food) {
+        return FoodResponseDto.builder()
+                .id(food.getId())
+                .code(food.getCode())
+                .product_name(food.getProduct_name())
+                .generic_name(food.getGeneric_name())
+                .quantityGrams(food.getQuantityGrams())
+                .energyKcal(food.getEnergyKcal())
+                .proteins(food.getProteins())
+                .carbohydrates(food.getCarbohydrates())
+                .fat(food.getFat())
+                .sugars(food.getSugars())
+                .fiber(food.getFiber())
+                .salt(food.getSalt())
+                .build();
     }
 }

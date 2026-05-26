@@ -2,7 +2,6 @@ package com.example.profileservice.service;
 
 import com.example.profileservice.entities.ProfileUser;
 import com.example.profileservice.repositories.ProfileUserRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,19 +22,9 @@ public class ProfileService {
 
     private static final int ITERATIONS = 120_000;
     private static final int KEY_LENGTH = 256;
-    private static final String DEFAULT_USERNAME = "duncan";
-    private static final String DEFAULT_PASSWORD = "fortnite";
-
     private final ProfileUserRepository profileUserRepository;
     private final SecureRandom secureRandom = new SecureRandom();
     private final Map<String, String> sessions = new ConcurrentHashMap<>();
-
-    @PostConstruct
-    void createDefaultUser() {
-        if (profileUserRepository.findByUsernameIgnoreCase(DEFAULT_USERNAME).isEmpty()) {
-            register(DEFAULT_USERNAME, DEFAULT_PASSWORD);
-        }
-    }
 
     public void register(String username, String password) {
         String cleanedUsername = username != null ? username.trim() : "";

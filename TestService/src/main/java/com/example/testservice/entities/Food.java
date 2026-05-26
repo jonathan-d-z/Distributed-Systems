@@ -1,6 +1,8 @@
 package com.example.testservice.entities;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.*;
 
@@ -12,10 +14,13 @@ import lombok.*;
 @Builder
 public class Food {
     @Id
-    @NonNull
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String code;
     private String product_name;
     private String generic_name;
+    private Float quantityGrams;
     private Float energyKcal;
     private Float proteins;
     private Float carbohydrates;

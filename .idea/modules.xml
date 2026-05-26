@@ -5,6 +5,8 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/Distributed-Systems.iml" filepath="$PROJECT_DIR$/.idea/Distributed-Systems.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/ProfileService.main.iml" filepath="$PROJECT_DIR$/.idea/modules/ProfileService.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/ProfileService.test.iml" filepath="$PROJECT_DIR$/.idea/modules/ProfileService.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/TestService.main.iml" filepath="$PROJECT_DIR$/.idea/modules/TestService.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/TestService.test.iml" filepath="$PROJECT_DIR$/.idea/modules/TestService.test.iml" />
     </modules>
   </component>
 </project>

@@ -41,6 +41,12 @@
       gap: 0.75rem;
     }
 
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
     header .logo {
       font-size: 1.4rem;
       font-weight: 700;
@@ -80,8 +86,8 @@
       gap: 0.75rem;
     }
 
-    input[type="text"] {
-      flex: 1;
+    input[type="text"],
+    input[type="number"] {
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -92,8 +98,18 @@
       transition: border-color 0.15s;
     }
 
-    input[type="text"]:focus { border-color: var(--green); }
-    input[type="text"]::placeholder { color: var(--muted); }
+    input[type="text"] {
+      flex: 1;
+    }
+
+    input[type="number"] {
+      width: 8rem;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus { border-color: var(--green); }
+    input[type="text"]::placeholder,
+    input[type="number"]::placeholder { color: var(--muted); }
 
     button {
       background: var(--green);
@@ -244,6 +260,15 @@
     }
 
     .card-header h2 { margin-bottom: 0; }
+
+    .challenge-action {
+      display: flex;
+      justify-content: center;
+    }
+
+    .challenge-action button {
+      min-width: 12rem;
+    }
   </style>
 </head>
 <body>
@@ -253,7 +278,9 @@
     <span class="logo">FoodNutri</span>
     <span class="tagline">Track what you eat</span>
   </div>
-  <button class="logout-btn" onclick="logout()">Logout</button>
+  <div class="nav-actions">
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
 </header>
 
 <main>
@@ -263,6 +290,7 @@
     <h2>Log a food</h2>
     <div class="search-row">
       <input type="text" id="searchInput" placeholder="e.g. Nutella, Avocado, Oatmeal..." />
+      <input type="number" id="quantityInput" min="1" step="1" value="100" aria-label="Amount in grams" />
       <button id="searchBtn" onclick="searchFood()">Search &amp; Save</button>
     </div>
     <div class="error-msg" id="errorMsg"></div>
@@ -280,6 +308,10 @@
     <div class="nutrients" id="nutrientsGrid"></div>
   </div>
 
+  <div class="challenge-action">
+    <button onclick="openChallenges()">Challenges</button>
+  </div>
+
   <!-- Food log -->
   <div class="card">
     <div class="card-header">
@@ -291,6 +323,7 @@
         <thead>
           <tr>
             <th>Product</th>
+            <th>Amount</th>
             <th>kcal</th>
             <th>Protein</th>
             <th>Carbs</th>
@@ -301,7 +334,7 @@
           </tr>
         </thead>
         <tbody id="foodTableBody">
-          <tr><td colspan="8" class="empty-state">No foods logged yet.</td></tr>
+          <tr><td colspan="9" class="empty-state">No foods logged yet.</td></tr>
         </tbody>
       </table>
     </div>
@@ -310,8 +343,40 @@
 </main>
 
 <script>
-  const API = 'http://localhost:8085/api';
-  const PROFILE_SERVICE_URL = 'http://localhost:8082';
+  const API = '/api';
+  const PROFILE_SERVICE_URL = '/login';
+  const CHALLENGE_UI_URL = '/challenge-ui';
+  const TOKEN_KEY = 'foodnutriProfileToken';
+
+  async function requireLogin() {
+    const token = sessionStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      window.location.replace(`${PROFILE_SERVICE_URL}?logout=1`);
+      return false;
+    }
+
+    try {
+      const response = await fetch(`${API}/profiles/validate`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!response.ok) {
+        sessionStorage.removeItem(TOKEN_KEY);
+        window.location.replace(`${PROFILE_SERVICE_URL}?logout=1`);
+        return false;
+      }
+      return true;
+    } catch {
+      window.location.replace(PROFILE_SERVICE_URL);
+      return false;
+    }
+  }
+
+  function authHeaders(extraHeaders = {}) {
+    return {
+      ...extraHeaders,
+      Authorization: `Bearer ${sessionStorage.getItem(TOKEN_KEY)}`
+    };
+  }
 
   function fmt(val) {
     return val != null ? val.toFixed(1) : '-';
@@ -319,17 +384,27 @@
 
   function logout() {
     sessionStorage.clear();
-    window.location.href = `${PROFILE_SERVICE_URL}/?logout=1`;
+    window.location.href = `${PROFILE_SERVICE_URL}?logout=1`;
+  }
+
+  function openChallenges() {
+    window.location.href = CHALLENGE_UI_URL;
   }
 
   async function searchFood() {
     const input = document.getElementById('searchInput');
     const btn = document.getElementById('searchBtn');
+    const quantityInput = document.getElementById('quantityInput');
     const errorMsg = document.getElementById('errorMsg');
     const resultCard = document.getElementById('result');
     const name = input.value.trim();
+    const quantityGrams = Number(quantityInput.value);
 
     if (!name) return;
+    if (!Number.isFinite(quantityGrams) || quantityGrams <= 0) {
+      showError('Enter a valid gram amount.');
+      return;
+    }
 
     errorMsg.style.display = 'none';
     resultCard.style.display = 'none';
@@ -339,8 +414,8 @@
     try {
       const res = await fetch(`${API}/foods/search`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ name, quantityGrams })
       });
 
       const body = await res.json().catch(() => ({}));
@@ -360,6 +435,7 @@
       showResult(body);
       loadFoods();
       input.value = '';
+      quantityInput.value = '100';
     } catch (e) {
       showError(e.message || 'Could not reach the server. Is the app running?');
     } finally {
@@ -370,7 +446,7 @@
 
   function showResult(food) {
     document.getElementById('productName').textContent = food.product_name || food.code;
-    document.getElementById('productCode').textContent = `Barcode: ${food.code}`;
+    document.getElementById('productCode').textContent = `${fmt(food.quantityGrams)}g logged - Barcode: ${food.code}`;
 
     const nutrients = [
       { label: 'Calories',      value: food.energyKcal,    unit: 'kcal' },
@@ -400,18 +476,21 @@
 
   async function loadFoods() {
     try {
-      const res = await fetch(`${API}/foods`);
+      const res = await fetch(`${API}/foods`, {
+        headers: authHeaders()
+      });
       const foods = await res.json();
       const tbody = document.getElementById('foodTableBody');
 
       if (!foods.length) {
-        tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No foods logged yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No foods logged yet.</td></tr>';
         return;
       }
 
       tbody.innerHTML = foods.map(f => `
         <tr>
           <td><strong>${f.product_name || f.code}</strong></td>
+          <td>${fmt(f.quantityGrams)} g</td>
           <td>${fmt(f.energyKcal)}</td>
           <td>${fmt(f.proteins)} g</td>
           <td>${fmt(f.carbohydrates)} g</td>
@@ -429,8 +508,13 @@
   document.getElementById('searchInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') searchFood();
   });
+  document.getElementById('quantityInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') searchFood();
+  });
 
-  loadFoods();
+  requireLogin().then(isLoggedIn => {
+    if (isLoggedIn) loadFoods();
+  });
 </script>
 
 </body>

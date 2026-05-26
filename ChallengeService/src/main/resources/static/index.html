@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FoodNutri – Challenges</title>
+  <title>FoodNutri - Challenges</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -36,11 +36,25 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 1rem;
     }
 
-    .header-left { display: flex; align-items: center; gap: 0.75rem; }
-    .logo { font-size: 1.4rem; font-weight: 700; color: var(--green); }
-    .tagline { color: var(--muted); font-size: 0.9rem; }
+    .header-left {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
 
     .nav-link {
       color: var(--muted);
@@ -49,9 +63,12 @@
       border: 1px solid var(--border);
       padding: 0.35rem 0.85rem;
       border-radius: 6px;
-      transition: color 0.15s, border-color 0.15s;
     }
-    .nav-link:hover { color: var(--text); border-color: var(--text); }
+
+    .nav-link:hover {
+      color: var(--text);
+      border-color: var(--text);
+    }
 
     main {
       max-width: 860px;
@@ -74,9 +91,13 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1.5rem;
+      gap: 1rem;
     }
 
-    .card-header h2 { font-size: 1.05rem; font-weight: 600; }
+    .card-header h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
 
     button {
       background: var(--green);
@@ -87,15 +108,16 @@
       font-size: 0.92rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.15s;
       white-space: nowrap;
     }
+
     button:hover { background: var(--green-dark); }
     button:disabled { background: var(--border); cursor: not-allowed; }
 
     .spinner {
       display: inline-block;
-      width: 14px; height: 14px;
+      width: 14px;
+      height: 14px;
       border: 2px solid rgba(255,255,255,0.3);
       border-top-color: #fff;
       border-radius: 50%;
@@ -103,9 +125,46 @@
       vertical-align: middle;
       margin-right: 0.4rem;
     }
+
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Challenge cards */
+    .stats-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-box {
+      flex: 1;
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      text-align: center;
+    }
+
+    .stat-box .num {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .stat-box .lbl {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+
+    .error-msg {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid var(--red);
+      color: var(--red);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.88rem;
+      display: none;
+      margin-bottom: 1rem;
+    }
+
     .challenges-grid {
       display: flex;
       flex-direction: column;
@@ -120,18 +179,25 @@
       display: flex;
       align-items: flex-start;
       gap: 1rem;
-      transition: opacity 0.2s;
     }
 
     .challenge-item.done {
-      opacity: 0.45;
+      opacity: 0.55;
     }
 
     .challenge-icon {
-      font-size: 1.5rem;
-      line-height: 1;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
       margin-top: 0.1rem;
+      background: var(--border);
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 700;
     }
 
     .challenge-body { flex: 1; }
@@ -143,6 +209,7 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      flex-wrap: wrap;
     }
 
     .challenge-title.done-text {
@@ -176,11 +243,17 @@
       flex-shrink: 0;
       align-self: center;
     }
-    .complete-btn:hover { background: var(--green); border-color: var(--green); color: #fff; }
+
+    .complete-btn:hover {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
 
     .done-check {
       color: var(--green);
-      font-size: 1.1rem;
+      font-size: 0.85rem;
+      font-weight: 700;
       align-self: center;
       flex-shrink: 0;
     }
@@ -197,64 +270,36 @@
       font-size: 0.82rem;
       opacity: 0.7;
     }
-
-    .error-msg {
-      background: rgba(239,68,68,0.1);
-      border: 1px solid var(--red);
-      color: var(--red);
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-      font-size: 0.88rem;
-      display: none;
-    }
-
-    .stats-row {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .stat-box {
-      flex: 1;
-      background: var(--surface2);
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-      text-align: center;
-    }
-    .stat-box .num { font-size: 1.5rem; font-weight: 700; color: var(--green); }
-    .stat-box .lbl { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
   </style>
 </head>
 <body>
 
 <header>
   <div class="header-left">
-    <span class="logo">🏆 Challenges</span>
+    <span class="logo">Challenges</span>
     <span class="tagline">Daily health goals</span>
   </div>
-  <a href="http://localhost:8080" class="nav-link">🥦 Food Log →</a>
+  <a href="/food" class="nav-link">Food Log</a>
 </header>
 
 <main>
-
-  <!-- Stats + Generate -->
   <div class="card">
     <div class="card-header">
       <h2>Today's Challenges</h2>
-      <button id="generateBtn" onclick="generateChallenges()">⚡ Generate</button>
+      <button id="generateBtn" onclick="generateChallenges()">Generate</button>
     </div>
 
     <div class="stats-row">
       <div class="stat-box">
-        <div class="num" id="statTotal">–</div>
+        <div class="num" id="statTotal">-</div>
         <div class="lbl">Total</div>
       </div>
       <div class="stat-box">
-        <div class="num" id="statDone">–</div>
+        <div class="num" id="statDone">-</div>
         <div class="lbl">Completed</div>
       </div>
       <div class="stat-box">
-        <div class="num" id="statOpen">–</div>
+        <div class="num" id="statOpen">-</div>
         <div class="lbl">Open</div>
       </div>
     </div>
@@ -268,44 +313,77 @@
       </div>
     </div>
   </div>
-
 </main>
 
 <script>
-  const API = 'http://localhost:8085/api';
+  const API = '/api';
+  const LOGIN_URL = '/login';
+  const TOKEN_KEY = 'foodnutriProfileToken';
 
   const TYPE_META = {
-    WATER:    { icon: '💧', color: '#3b82f6' },
-    CALORIES: { icon: '🔥', color: '#f97316' },
-    PROTEIN:  { icon: '💪', color: '#a855f7' },
-    FIBER:    { icon: '🥦', color: '#22c55e' },
-    SUGAR:    { icon: '🍬', color: '#f59e0b' },
-    FAT:      { icon: '🥑', color: '#ef4444' },
+    WATER:    { label: 'WA', color: '#3b82f6' },
+    CALORIES: { label: 'CA', color: '#f97316' },
+    PROTEIN:  { label: 'PR', color: '#a855f7' },
+    FIBER:    { label: 'FI', color: '#22c55e' },
+    SUGAR:    { label: 'SU', color: '#f59e0b' },
+    FAT:      { label: 'FA', color: '#ef4444' },
   };
 
   function getMeta(type) {
-    return TYPE_META[type] || { icon: '⭐', color: '#94a3b8' };
+    return TYPE_META[type] || { label: 'GO', color: '#94a3b8' };
+  }
+
+  async function requireLogin() {
+    const token = sessionStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      window.location.replace(`${LOGIN_URL}?logout=1`);
+      return false;
+    }
+
+    try {
+      const response = await fetch(`${API}/profiles/validate`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!response.ok) {
+        sessionStorage.removeItem(TOKEN_KEY);
+        window.location.replace(`${LOGIN_URL}?logout=1`);
+        return false;
+      }
+      return true;
+    } catch {
+      window.location.replace(LOGIN_URL);
+      return false;
+    }
+  }
+
+  function authHeaders(extraHeaders = {}) {
+    return {
+      ...extraHeaders,
+      Authorization: `Bearer ${sessionStorage.getItem(TOKEN_KEY)}`
+    };
   }
 
   async function loadChallenges() {
     try {
-      const res = await fetch(`${API}/challenges`);
+      const res = await fetch(`${API}/challenges`, {
+        headers: authHeaders()
+      });
       const challenges = await res.json();
       renderChallenges(challenges);
     } catch {
-      // service not running yet
+      // Service may still be starting.
     }
   }
 
   function renderChallenges(challenges) {
     const grid = document.getElementById('challengesGrid');
     const total = challenges.length;
-    const done  = challenges.filter(c => c.completed).length;
-    const open  = total - done;
+    const done = challenges.filter(c => c.completed).length;
+    const open = total - done;
 
     document.getElementById('statTotal').textContent = total;
-    document.getElementById('statDone').textContent  = done;
-    document.getElementById('statOpen').textContent  = open;
+    document.getElementById('statDone').textContent = done;
+    document.getElementById('statOpen').textContent = open;
 
     if (total === 0) {
       grid.innerHTML = `
@@ -316,14 +394,13 @@
       return;
     }
 
-    // Sort: open first, then completed
     const sorted = [...challenges].sort((a, b) => Number(a.completed) - Number(b.completed));
 
     grid.innerHTML = sorted.map(c => {
       const meta = getMeta(c.type);
       return `
         <div class="challenge-item ${c.completed ? 'done' : ''}" id="challenge-${c.id}">
-          <div class="challenge-icon">${meta.icon}</div>
+          <div class="challenge-icon" style="background:${meta.color}22;color:${meta.color}">${meta.label}</div>
           <div class="challenge-body">
             <div class="challenge-title ${c.completed ? 'done-text' : ''}">
               ${c.title}
@@ -332,7 +409,7 @@
             <div class="challenge-desc">${c.description}</div>
           </div>
           ${c.completed
-            ? `<span class="done-check">✓</span>`
+            ? `<span class="done-check">Done</span>`
             : `<button class="complete-btn" onclick="completeChallenge(${c.id})">Mark done</button>`
           }
         </div>`;
@@ -344,10 +421,13 @@
     const errorMsg = document.getElementById('errorMsg');
     errorMsg.style.display = 'none';
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>Generating…';
+    btn.innerHTML = '<span class="spinner"></span>Generating...';
 
     try {
-      const res = await fetch(`${API}/challenges/generate`, { method: 'POST' });
+      const res = await fetch(`${API}/challenges/generate`, {
+        method: 'POST',
+        headers: authHeaders()
+      });
       const body = await res.json();
 
       if (!res.ok) {
@@ -358,24 +438,29 @@
 
       renderChallenges(body);
     } catch {
-      errorMsg.textContent = 'Could not reach Challenge Service on port 8081.';
+      errorMsg.textContent = 'Could not reach Challenge Service.';
       errorMsg.style.display = 'block';
     } finally {
       btn.disabled = false;
-      btn.textContent = '⚡ Generate';
+      btn.textContent = 'Generate';
     }
   }
 
   async function completeChallenge(id) {
     try {
-      const res = await fetch(`${API}/challenges/${id}/complete`, { method: 'PATCH' });
+      const res = await fetch(`${API}/challenges/${id}/complete`, {
+        method: 'PATCH',
+        headers: authHeaders()
+      });
       if (res.ok) loadChallenges();
     } catch {
       console.error('Could not complete challenge', id);
     }
   }
 
-  loadChallenges();
+  requireLogin().then(isLoggedIn => {
+    if (isLoggedIn) loadChallenges();
+  });
 </script>
 
 </body>

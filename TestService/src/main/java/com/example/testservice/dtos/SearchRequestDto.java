@@ -9,4 +9,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class SearchRequestDto {
     private String name;
+    private Float quantityGrams;
 }

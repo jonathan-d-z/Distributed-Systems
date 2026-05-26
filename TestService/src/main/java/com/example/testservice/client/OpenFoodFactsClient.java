@@ -3,6 +3,7 @@ package com.example.testservice.client;
 import com.example.testservice.dtos.OpenFoodFactsResponse;
 import com.example.testservice.dtos.ProductDto;
 import com.example.testservice.exceptions.OpenFoodFactsUnavailableException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -15,10 +16,12 @@ public class OpenFoodFactsClient {
 
     private final RestClient restClient;
 
-    public OpenFoodFactsClient(RestClient.Builder restClientBuilder) {
+    public OpenFoodFactsClient(
+            RestClient.Builder restClientBuilder,
+            @Value("${openfoodfacts.user-agent:FoodNutriApp/1.0}") String userAgent) {
         this.restClient = restClientBuilder
                 .baseUrl("https://world.openfoodfacts.org")
-                .defaultHeader("User-Agent", "FoodNutriApp/1.0 (lorenz.brach@gmail.com)")
+                .defaultHeader("User-Agent", userAgent)
                 .build();
     }
 

@@ -21,9 +21,10 @@ public class FoodServiceClient {
                 .build();
     }
 
-    public List<FoodDto> getAllFoods() {
+    public List<FoodDto> getAllFoods(String authorizationHeader) {
         return restClient.get()
                 .uri("/foods")
+                .header("Authorization", authorizationHeader)
                 .retrieve()
                 .body(new ParameterizedTypeReference<List<FoodDto>>() {});
     }

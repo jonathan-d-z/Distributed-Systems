@@ -171,12 +171,12 @@
     <form id="accountForm">
       <label>
         Username
-        <input type="text" id="usernameInput" autocomplete="username" value="duncan" />
+        <input type="text" id="usernameInput" autocomplete="username" />
         <span class="hint" id="usernameHint" style="display:none;">Minimum 3 characters.</span>
       </label>
       <label>
         Password
-        <input type="password" id="passwordInput" autocomplete="current-password" value="fortnite" />
+        <input type="password" id="passwordInput" autocomplete="current-password" />
         <span class="hint" id="passwordHint" style="display:none;">Minimum 6 characters.</span>
       </label>
       <button id="submitBtn" type="submit">Login</button>
@@ -191,8 +191,8 @@
 </main>
 
 <script>
-  const FOODNUTRI_URL = 'http://localhost:8080';
-  const API = 'http://localhost:8085/api';
+  const FOODNUTRI_URL = '/food';
+  const API = '/api';
   const TOKEN_KEY = 'foodnutriProfileToken';
 
   let createMode = false;
@@ -230,8 +230,8 @@
     modeBtn.textContent = createMode ? 'Back to Login' : 'Create Account';
     usernameHint.style.display = createMode ? 'inline' : 'none';
     passwordHint.style.display = createMode ? 'inline' : 'none';
-    passwordInput.value = createMode ? '' : 'fortnite';
-    usernameInput.value = createMode ? '' : 'duncan';
+    passwordInput.value = '';
+    usernameInput.value = '';
   }
 
   function validateInput(username, password) {
@@ -256,6 +256,26 @@
 
   function openFoodNutri() {
     window.location.href = FOODNUTRI_URL;
+  }
+
+  async function redirectIfAlreadyLoggedIn() {
+    const token = sessionStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API}/profiles/validate`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        openFoodNutri();
+      } else {
+        sessionStorage.removeItem(TOKEN_KEY);
+      }
+    } catch {
+      sessionStorage.removeItem(TOKEN_KEY);
+    }
   }
 
   async function submitJson(url, payload) {
@@ -325,6 +345,8 @@
     sessionStorage.removeItem(TOKEN_KEY);
     window.history.replaceState({}, document.title, window.location.pathname);
     setMessage('success', 'You have been logged out.');
+  } else {
+    redirectIfAlreadyLoggedIn();
   }
 </script>
 </body>

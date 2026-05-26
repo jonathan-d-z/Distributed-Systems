@@ -26,7 +26,7 @@ public class FoodService {
         foodRepository.save(food);
     }
 
-    public Optional<Food> searchAndSave(String name) {
+    public Optional<Food> searchAndSave(String name, Float quantityGrams) {
         Optional<ProductDto> productOpt = openFoodFactsClient.searchByName(name);
         if (productOpt.isEmpty()) {
             return Optional.empty();
@@ -40,21 +40,27 @@ public class FoodService {
         }
 
         NutrimentsDto n = product.getNutriments();
+        float grams = quantityGrams != null && quantityGrams > 0 ? quantityGrams : 100f;
 
         Food food = Food.builder()
                 .code(product.getCode())
                 .product_name(product.getProductName())
                 .generic_name(product.getGenericName())
-                .energyKcal(n != null ? n.getEnergyKcal() : null)
-                .proteins(n != null ? n.getProteins() : null)
-                .carbohydrates(n != null ? n.getCarbohydrates() : null)
-                .fat(n != null ? n.getFat() : null)
-                .sugars(n != null ? n.getSugars() : null)
-                .fiber(n != null ? n.getFiber() : null)
-                .salt(n != null ? n.getSalt() : null)
+                .quantityGrams(grams)
+                .energyKcal(scale(n != null ? n.getEnergyKcal() : null, grams))
+                .proteins(scale(n != null ? n.getProteins() : null, grams))
+                .carbohydrates(scale(n != null ? n.getCarbohydrates() : null, grams))
+                .fat(scale(n != null ? n.getFat() : null, grams))
+                .sugars(scale(n != null ? n.getSugars() : null, grams))
+                .fiber(scale(n != null ? n.getFiber() : null, grams))
+                .salt(scale(n != null ? n.getSalt() : null, grams))
                 .build();
 
         foodRepository.save(food);
         return Optional.of(food);
+    }
+
+    private Float scale(Float valuePer100g, float grams) {
+        return valuePer100g != null ? valuePer100g * grams / 100f : null;
     }
 }

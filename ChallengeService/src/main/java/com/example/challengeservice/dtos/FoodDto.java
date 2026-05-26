@@ -8,8 +8,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class FoodDto {
+    private Long id;
     private String code;
     private String product_name;
+    private String generic_name;
+    private Float quantityGrams;
     private Float energyKcal;
     private Float proteins;
     private Float carbohydrates;
