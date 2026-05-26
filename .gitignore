@@ -1,0 +1,17 @@
+# Gradle
+.gradle/
+build/
+out/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Claude
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
