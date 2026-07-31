@@ -1,6 +1,5 @@
 package com.example.testservice.controllers;
 
-import com.example.testservice.client.ProfileAuthClient;
 import com.example.testservice.dtos.FoodRequestDto;
 import com.example.testservice.dtos.FoodResponseDto;
 import com.example.testservice.dtos.SearchRequestDto;
@@ -12,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -20,23 +18,15 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class FoodController {
     final FoodService foodService;
-    final ProfileAuthClient profileAuthClient;
 
     @GetMapping("/foods")
-    public ResponseEntity<?> getFoods(@RequestHeader(value = "Authorization", required = false) String authorizationHeader){
-        if (!profileAuthClient.isAuthorized(authorizationHeader)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Unauthorized."));
-        }
+    public ResponseEntity<?> getFoods(){
         return ResponseEntity.ok(this.foodService.getAllFoods());
     }
 
     @PostMapping("/foods")
     public ResponseEntity<?> saveFood(
-            @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
             @RequestBody FoodRequestDto foodRequestDto){
-        if (!profileAuthClient.isAuthorized(authorizationHeader)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Unauthorized."));
-        }
         Food food = Food.builder()
                 .code(foodRequestDto.getCode())
                 .product_name(foodRequestDto.getProduct_name())
@@ -49,11 +39,7 @@ public class FoodController {
 
     @PostMapping("/foods/search")
     public ResponseEntity<?> searchAndSaveFood(
-            @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
             @RequestBody SearchRequestDto searchRequest) {
-        if (!profileAuthClient.isAuthorized(authorizationHeader)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Unauthorized."));
-        }
         try {
             Optional<Food> foodOpt = foodService.searchAndSave(searchRequest.getName(), searchRequest.getQuantityGrams());
 

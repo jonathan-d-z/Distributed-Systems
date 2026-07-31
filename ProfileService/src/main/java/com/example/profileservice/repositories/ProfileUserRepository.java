@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface ProfileUserRepository extends JpaRepository<ProfileUser, Long> {
-    Optional<ProfileUser> findByUsernameIgnoreCase(String username);
+    Optional<ProfileUser> findByKeycloakSubject(String keycloakSubject);
 }

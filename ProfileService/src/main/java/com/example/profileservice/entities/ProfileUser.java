@@ -18,11 +18,11 @@ public class ProfileUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String username;
+    @Column(nullable = false, unique = true, updatable = false)
+    private String keycloakSubject;
 
     @Column(nullable = false)
-    private String passwordHash;
+    private String username;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

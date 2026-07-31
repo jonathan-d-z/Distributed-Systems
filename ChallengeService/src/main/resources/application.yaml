@@ -11,6 +11,12 @@ spring:
   h2:
     console:
       enabled: ${H2_CONSOLE_ENABLED:false}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER:http://localhost:8090/realms/foodnutri}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8090/realms/foodnutri/protocol/openid-connect/certs}
 
 server:
   port: 8081
@@ -18,10 +24,6 @@ server:
 food:
   service:
     url: ${FOOD_SERVICE_URL:http://localhost:8080}
-
-profile:
-  service:
-    url: ${PROFILE_SERVICE_URL:http://localhost:8082}
 
 eureka:
   client:

@@ -347,21 +347,48 @@
   const PROFILE_SERVICE_URL = '/login';
   const CHALLENGE_UI_URL = '/challenge-ui';
   const TOKEN_KEY = 'foodnutriProfileToken';
+  const REFRESH_TOKEN_KEY = 'foodnutriRefreshToken';
+  const EXPIRES_AT_KEY = 'foodnutriTokenExpiresAt';
+  const KEYCLOAK_ISSUER = 'http://localhost:8090/realms/foodnutri';
+  const KEYCLOAK_CLIENT_ID = 'foodnutri-web';
+
+  async function refreshAccessToken() {
+    const expiresAt = Number(sessionStorage.getItem(EXPIRES_AT_KEY) || 0);
+    if (sessionStorage.getItem(TOKEN_KEY) && expiresAt > Date.now() + 30_000) return true;
+    const refreshToken = sessionStorage.getItem(REFRESH_TOKEN_KEY);
+    if (!refreshToken) return false;
+
+    const response = await fetch(`${KEYCLOAK_ISSUER}/protocol/openid-connect/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        client_id: KEYCLOAK_CLIENT_ID,
+        refresh_token: refreshToken
+      })
+    });
+    if (!response.ok) return false;
+    const tokens = await response.json();
+    sessionStorage.setItem(TOKEN_KEY, tokens.access_token);
+    if (tokens.refresh_token) sessionStorage.setItem(REFRESH_TOKEN_KEY, tokens.refresh_token);
+    sessionStorage.setItem(EXPIRES_AT_KEY, String(Date.now() + tokens.expires_in * 1000));
+    return true;
+  }
 
   async function requireLogin() {
-    const token = sessionStorage.getItem(TOKEN_KEY);
-    if (!token) {
-      window.location.replace(`${PROFILE_SERVICE_URL}?logout=1`);
+    if (!await refreshAccessToken().catch(() => false)) {
+      sessionStorage.clear();
+      window.location.replace(PROFILE_SERVICE_URL);
       return false;
     }
 
     try {
-      const response = await fetch(`${API}/profiles/validate`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await fetch(`${API}/profiles/me`, {
+        headers: authHeaders()
       });
       if (!response.ok) {
-        sessionStorage.removeItem(TOKEN_KEY);
-        window.location.replace(`${PROFILE_SERVICE_URL}?logout=1`);
+        sessionStorage.clear();
+        window.location.replace(PROFILE_SERVICE_URL);
         return false;
       }
       return true;
@@ -383,7 +410,6 @@
   }
 
   function logout() {
-    sessionStorage.clear();
     window.location.href = `${PROFILE_SERVICE_URL}?logout=1`;
   }
 

@@ -1,6 +1,5 @@
 package com.example.challengeservice.controllers;
 
-import com.example.challengeservice.client.ProfileAuthClient;
 import com.example.challengeservice.dtos.ChallengeResponseDto;
 import com.example.challengeservice.entities.Challenge;
 import com.example.challengeservice.service.ChallengeService;
@@ -18,13 +17,9 @@ import java.util.Map;
 public class ChallengeController {
 
     private final ChallengeService challengeService;
-    private final ProfileAuthClient profileAuthClient;
 
     @GetMapping
-    public ResponseEntity<?> getAllChallenges(@RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
-        if (!profileAuthClient.isAuthorized(authorizationHeader)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Unauthorized."));
-        }
+    public ResponseEntity<?> getAllChallenges() {
         List<ChallengeResponseDto> challenges = challengeService.getAllChallenges().stream()
                 .map(this::toDto)
                 .toList();
@@ -33,9 +28,6 @@ public class ChallengeController {
 
     @PostMapping("/generate")
     public ResponseEntity<?> generateChallenges(@RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
-        if (!profileAuthClient.isAuthorized(authorizationHeader)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Unauthorized."));
-        }
         try {
             List<ChallengeResponseDto> challenges = challengeService.generateChallenges(authorizationHeader).stream()
                     .map(this::toDto)
@@ -49,12 +41,7 @@ public class ChallengeController {
     }
 
     @PatchMapping("/{id}/complete")
-    public ResponseEntity<?> completeChallenge(
-            @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
-            @PathVariable Long id) {
-        if (!profileAuthClient.isAuthorized(authorizationHeader)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Unauthorized."));
-        }
+    public ResponseEntity<?> completeChallenge(@PathVariable Long id) {
         return challengeService.completeChallenge(id)
                 .<ResponseEntity<?>>map(c -> ResponseEntity.ok(toDto(c)))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)

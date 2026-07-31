@@ -1,0 +1,44 @@
+{
+  "realm": "foodnutri",
+  "enabled": true,
+  "displayName": "FoodNutri",
+  "registrationAllowed": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "USER",
+        "description": "May use the FoodNutri APIs"
+      }
+    ]
+  },
+  "defaultRoles": [
+    "offline_access",
+    "uma_authorization",
+    "USER"
+  ],
+  "clients": [
+    {
+      "clientId": "foodnutri-web",
+      "name": "FoodNutri Web",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "rootUrl": "http://localhost:8085",
+      "baseUrl": "http://localhost:8085/",
+      "redirectUris": [
+        "http://localhost:8085/login*"
+      ],
+      "webOrigins": [
+        "http://localhost:8085"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:8085/*"
+      }
+    }
+  ]
+}
