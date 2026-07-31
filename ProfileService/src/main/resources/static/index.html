@@ -15,6 +15,7 @@
     h1 { margin:0 0 .75rem; }
     p { color:var(--muted); line-height:1.6; }
     .actions { display:flex; flex-wrap:wrap; gap:.75rem; margin-top:1.5rem; }
+    [hidden] { display:none !important; }
     button { padding:.7rem 1.2rem; border:0; border-radius:8px; background:var(--green); color:white; font:inherit; font-weight:650; cursor:pointer; }
     button:hover { background:var(--green-dark); }
     button.secondary { background:transparent; border:1px solid var(--border); color:var(--text); }
@@ -99,6 +100,43 @@
     }
   }
 
+  async function refreshAccessToken() {
+    const refreshToken = sessionStorage.getItem(AUTH.refreshTokenKey);
+    if (!refreshToken) return false;
+
+    const response = await fetch(`${AUTH.issuer}/protocol/openid-connect/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        client_id: AUTH.clientId,
+        refresh_token: refreshToken
+      })
+    });
+    if (!response.ok) return false;
+
+    const tokens = await response.json();
+    sessionStorage.setItem(AUTH.tokenKey, tokens.access_token);
+    if (tokens.refresh_token) sessionStorage.setItem(AUTH.refreshTokenKey, tokens.refresh_token);
+    if (tokens.id_token) sessionStorage.setItem(AUTH.idTokenKey, tokens.id_token);
+    sessionStorage.setItem(AUTH.expiresAtKey, String(Date.now() + tokens.expires_in * 1000));
+    return true;
+  }
+
+  async function openFoodNutri() {
+    const token = sessionStorage.getItem(AUTH.tokenKey);
+    const claims = token ? decodeJwt(token) : {};
+    const tokenIsValid = Boolean(token && claims.exp * 1000 > Date.now() + 30_000);
+    if (tokenIsValid || await refreshAccessToken().catch(() => false)) {
+      window.location.assign('/food');
+      return;
+    }
+
+    clearTokens();
+    renderSession();
+    showMessage('error', 'Deine Keycloak-Sitzung ist abgelaufen. Bitte melde dich erneut an.');
+  }
+
   async function startAuthorization(registration = false) {
     const verifier = randomBase64Url();
     const state = randomBase64Url(24);
@@ -159,7 +197,7 @@
 
   document.getElementById('loginButton').addEventListener('click', () => startAuthorization(false));
   document.getElementById('registerButton').addEventListener('click', () => startAuthorization(true));
-  document.getElementById('openButton').addEventListener('click', () => window.location.assign('/food'));
+  document.getElementById('openButton').addEventListener('click', openFoodNutri);
   document.getElementById('logoutButton').addEventListener('click', logout);
 
   const query = new URLSearchParams(window.location.search);
