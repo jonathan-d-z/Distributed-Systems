@@ -1,0 +1,85 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.0
+    container_name: foodnutri-keycloak
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HOSTNAME: http://localhost:8090
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8090:8080"
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+      - ./keycloak/foodnutri-realm.json:/opt/keycloak/data/import/foodnutri-realm.json:ro
+
+  eureka-server:
+    build:
+      context: ./EurekaServer
+    container_name: foodnutri-eureka-server
+    ports:
+      - "8761:8761"
+
+  test-service:
+    build:
+      context: ./TestService
+    container_name: foodnutri-test-service
+    depends_on:
+      - eureka-server
+      - keycloak
+    environment:
+      EUREKA_CLIENT_SERVICE_URL: http://eureka-server:8761/eureka/
+      KEYCLOAK_ISSUER: http://localhost:8090/realms/foodnutri
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/foodnutri/protocol/openid-connect/certs
+    expose:
+      - "8080"
+
+  profile-service:
+    build:
+      context: ./ProfileService
+    container_name: foodnutri-profile-service
+    depends_on:
+      - eureka-server
+      - keycloak
+    environment:
+      EUREKA_CLIENT_SERVICE_URL: http://eureka-server:8761/eureka/
+      KEYCLOAK_ISSUER: http://localhost:8090/realms/foodnutri
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/foodnutri/protocol/openid-connect/certs
+    expose:
+      - "8082"
+
+  challenge-service:
+    build:
+      context: ./ChallengeService
+    container_name: foodnutri-challenge-service
+    depends_on:
+      - eureka-server
+      - test-service
+      - keycloak
+    environment:
+      EUREKA_CLIENT_SERVICE_URL: http://eureka-server:8761/eureka/
+      FOOD_SERVICE_URL: http://test-service:8080
+      KEYCLOAK_ISSUER: http://localhost:8090/realms/foodnutri
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/foodnutri/protocol/openid-connect/certs
+    expose:
+      - "8081"
+
+  api-gateway:
+    build:
+      context: ./ApiGateway
+    container_name: foodnutri-api-gateway
+    depends_on:
+      - eureka-server
+      - test-service
+      - profile-service
+      - challenge-service
+    environment:
+      EUREKA_CLIENT_SERVICE_URL: http://eureka-server:8761/eureka/
+      GATEWAY_ALLOWED_ORIGINS: http://localhost:8085,http://localhost:5173,http://localhost:3000
+    ports:
+      - "8085:8085"
+
+volumes:
+  keycloak-data:

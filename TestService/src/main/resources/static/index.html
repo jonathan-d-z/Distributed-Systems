@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FoodNutri</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #22c55e;
+      --green-dark: #16a34a;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #273549;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --red: #ef4444;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    header .logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    header .tagline {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+    }
+
+    .card h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      color: var(--text);
+    }
+
+    .search-row {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 1rem;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input[type="text"] {
+      flex: 1;
+    }
+
+    input[type="number"] {
+      width: 8rem;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus { border-color: var(--green); }
+    input[type="text"]::placeholder,
+    input[type="number"]::placeholder { color: var(--muted); }
+
+    button {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem 1.4rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    button:hover { background: var(--green-dark); }
+    button:disabled { background: var(--border); cursor: not-allowed; }
+
+    /* Result card */
+    #result { display: none; }
+
+    .product-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.25rem;
+    }
+
+    .product-name { font-size: 1.2rem; font-weight: 700; }
+    .product-code { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
+
+    .badge {
+      background: var(--green);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+    }
+
+    .nutrients {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .nutrient-box {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+    }
+
+    .nutrient-box .label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+
+    .nutrient-box .value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .nutrient-box .unit {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-left: 0.2rem;
+    }
+
+    /* Error */
+    .error-msg {
+      display: none;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid var(--red);
+      color: var(--red);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+
+    /* Log table */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    thead tr { border-bottom: 1px solid var(--border); }
+
+    th {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      color: var(--muted);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--surface2); }
+
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      padding: 2rem;
+      font-size: 0.9rem;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .logout-btn,
+    .refresh-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.8rem;
+      padding: 0.3rem 0.75rem;
+      font-weight: 500;
+    }
+
+    .logout-btn:hover,
+    .refresh-btn:hover { background: var(--surface2); color: var(--text); }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-header h2 { margin-bottom: 0; }
+
+    .challenge-action {
+      display: flex;
+      justify-content: center;
+    }
+
+    .challenge-action button {
+      min-width: 12rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="logo">FoodNutri</span>
+    <span class="tagline">Track what you eat</span>
+  </div>
+  <div class="nav-actions">
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- Search -->
+  <div class="card">
+    <h2>Log a food</h2>
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="e.g. Nutella, Avocado, Oatmeal..." />
+      <input type="number" id="quantityInput" min="1" step="1" value="100" aria-label="Amount in grams" />
+      <button id="searchBtn" onclick="searchFood()">Search &amp; Save</button>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <!-- Result -->
+  <div class="card" id="result">
+    <div class="product-header">
+      <div>
+        <div class="product-name" id="productName"></div>
+        <div class="product-code" id="productCode"></div>
+      </div>
+      <span class="badge">Saved</span>
+    </div>
+    <div class="nutrients" id="nutrientsGrid"></div>
+  </div>
+
+  <div class="challenge-action">
+    <button onclick="openChallenges()">Challenges</button>
+  </div>
+
+  <!-- Food log -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Food log</h2>
+      <button class="refresh-btn" onclick="loadFoods()">Refresh</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Amount</th>
+            <th>kcal</th>
+            <th>Protein</th>
+            <th>Carbs</th>
+            <th>Fat</th>
+            <th>Sugar</th>
+            <th>Fiber</th>
+            <th>Salt</th>
+          </tr>
+        </thead>
+        <tbody id="foodTableBody">
+          <tr><td colspan="9" class="empty-state">No foods logged yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const API = '/api';
+  const PROFILE_SERVICE_URL = '/login';
+  const CHALLENGE_UI_URL = '/challenge-ui';
+  const TOKEN_KEY = 'foodnutriProfileToken';
+  const REFRESH_TOKEN_KEY = 'foodnutriRefreshToken';
+  const EXPIRES_AT_KEY = 'foodnutriTokenExpiresAt';
+  const KEYCLOAK_ISSUER = 'http://localhost:8090/realms/foodnutri';
+  const KEYCLOAK_CLIENT_ID = 'foodnutri-web';
+
+  async function refreshAccessToken() {
+    const expiresAt = Number(sessionStorage.getItem(EXPIRES_AT_KEY) || 0);
+    if (sessionStorage.getItem(TOKEN_KEY) && expiresAt > Date.now() + 30_000) return true;
+    const refreshToken = sessionStorage.getItem(REFRESH_TOKEN_KEY);
+    if (!refreshToken) return false;
+
+    const response = await fetch(`${KEYCLOAK_ISSUER}/protocol/openid-connect/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        client_id: KEYCLOAK_CLIENT_ID,
+        refresh_token: refreshToken
+      })
+    });
+    if (!response.ok) return false;
+    const tokens = await response.json();
+    sessionStorage.setItem(TOKEN_KEY, tokens.access_token);
+    if (tokens.refresh_token) sessionStorage.setItem(REFRESH_TOKEN_KEY, tokens.refresh_token);
+    sessionStorage.setItem(EXPIRES_AT_KEY, String(Date.now() + tokens.expires_in * 1000));
+    return true;
+  }
+
+  async function requireLogin() {
+    if (!await refreshAccessToken().catch(() => false)) {
+      sessionStorage.clear();
+      window.location.replace(PROFILE_SERVICE_URL);
+      return false;
+    }
+
+    try {
+      const response = await fetch(`${API}/profiles/me`, {
+        headers: authHeaders()
+      });
+      if (!response.ok) {
+        sessionStorage.clear();
+        window.location.replace(PROFILE_SERVICE_URL);
+        return false;
+      }
+      return true;
+    } catch {
+      window.location.replace(PROFILE_SERVICE_URL);
+      return false;
+    }
+  }
+
+  function authHeaders(extraHeaders = {}) {
+    return {
+      ...extraHeaders,
+      Authorization: `Bearer ${sessionStorage.getItem(TOKEN_KEY)}`
+    };
+  }
+
+  function fmt(val) {
+    return val != null ? val.toFixed(1) : '-';
+  }
+
+  function logout() {
+    window.location.href = `${PROFILE_SERVICE_URL}?logout=1`;
+  }
+
+  function openChallenges() {
+    window.location.href = CHALLENGE_UI_URL;
+  }
+
+  async function searchFood() {
+    const input = document.getElementById('searchInput');
+    const btn = document.getElementById('searchBtn');
+    const quantityInput = document.getElementById('quantityInput');
+    const errorMsg = document.getElementById('errorMsg');
+    const resultCard = document.getElementById('result');
+    const name = input.value.trim();
+    const quantityGrams = Number(quantityInput.value);
+
+    if (!name) return;
+    if (!Number.isFinite(quantityGrams) || quantityGrams <= 0) {
+      showError('Enter a valid gram amount.');
+      return;
+    }
+
+    errorMsg.style.display = 'none';
+    resultCard.style.display = 'none';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Searching...';
+
+    try {
+      const res = await fetch(`${API}/foods/search`, {
+        method: 'POST',
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ name, quantityGrams })
+      });
+
+      const body = await res.json().catch(() => ({}));
+
+      if (res.status === 404) {
+        showError(body.message || `No product found for "${name}". Try a different name.`);
+        return;
+      }
+
+      if (res.status === 503) {
+        showError('OpenFoodFacts is temporarily unavailable due to high demand. Please wait a moment and try again.');
+        return;
+      }
+
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+      showResult(body);
+      loadFoods();
+      input.value = '';
+      quantityInput.value = '100';
+    } catch (e) {
+      showError(e.message || 'Could not reach the server. Is the app running?');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Search & Save';
+    }
+  }
+
+  function showResult(food) {
+    document.getElementById('productName').textContent = food.product_name || food.code;
+    document.getElementById('productCode').textContent = `${fmt(food.quantityGrams)}g logged - Barcode: ${food.code}`;
+
+    const nutrients = [
+      { label: 'Calories',      value: food.energyKcal,    unit: 'kcal' },
+      { label: 'Protein',       value: food.proteins,       unit: 'g' },
+      { label: 'Carbohydrates', value: food.carbohydrates,  unit: 'g' },
+      { label: 'Fat',           value: food.fat,            unit: 'g' },
+      { label: 'Sugar',         value: food.sugars,         unit: 'g' },
+      { label: 'Fiber',         value: food.fiber,          unit: 'g' },
+      { label: 'Salt',          value: food.salt,           unit: 'g' },
+    ];
+
+    document.getElementById('nutrientsGrid').innerHTML = nutrients.map(n => `
+      <div class="nutrient-box">
+        <div class="label">${n.label}</div>
+        <div class="value">${fmt(n.value)}<span class="unit">${n.unit}</span></div>
+      </div>
+    `).join('');
+
+    document.getElementById('result').style.display = 'block';
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  async function loadFoods() {
+    try {
+      const res = await fetch(`${API}/foods`, {
+        headers: authHeaders()
+      });
+      const foods = await res.json();
+      const tbody = document.getElementById('foodTableBody');
+
+      if (!foods.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No foods logged yet.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = foods.map(f => `
+        <tr>
+          <td><strong>${f.product_name || f.code}</strong></td>
+          <td>${fmt(f.quantityGrams)} g</td>
+          <td>${fmt(f.energyKcal)}</td>
+          <td>${fmt(f.proteins)} g</td>
+          <td>${fmt(f.carbohydrates)} g</td>
+          <td>${fmt(f.fat)} g</td>
+          <td>${fmt(f.sugars)} g</td>
+          <td>${fmt(f.fiber)} g</td>
+          <td>${fmt(f.salt)} g</td>
+        </tr>
+      `).join('');
+    } catch {
+      // server not running yet, ignore
+    }
+  }
+
+  document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') searchFood();
+  });
+  document.getElementById('quantityInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') searchFood();
+  });
+
+  requireLogin().then(isLoggedIn => {
+    if (isLoggedIn) loadFoods();
+  });
+</script>
+
+</body>
+</html>
